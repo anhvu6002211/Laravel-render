@@ -1,0 +1,22 @@
+{
+  "repoId": "9ea0a809-c2cc-4e29-95a6-74665fcccfd0",
+  "repoName": "laravel-app",
+  "server": "https://api.grapuco.com",
+  "language": "php",
+  "features": {
+    "embeddings": true,
+    "dataFlowAnalysis": true
+  },
+  "ignore": [
+    "node_modules",
+    "dist",
+    ".next",
+    ".git",
+    ".grapuco",
+    "__pycache__",
+    "vendor",
+    "target",
+    "build"
+  ],
+  "lastPush": "2026-04-08T09:25:50.469Z"
+}
