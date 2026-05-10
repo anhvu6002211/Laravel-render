@@ -59,3 +59,22 @@ Route::middleware('auth')->group(function () {
 // Filament tự động quản lý tất cả routes /admin/*
 // Đăng nhập admin: http://localhost:8001/admin/login
 // Tài khoản: admin@eshop.vn / password
+
+// Route kiểm tra kết nối Database
+Route::get('/db-test', function () {
+    try {
+        \DB::connection()->getPdo();
+        return "Kết nối Database thành công! Đang sử dụng: " . \DB::connection()->getDatabaseName();
+    } catch (\Exception $e) {
+        return "Lỗi kết nối Database: " . $e->getMessage();
+    }
+});
+
+Route::get('/db-debug', function () {
+    return response()->json([
+        'config' => config('database.connections.pgsql'),
+        'env_DB_URL' => env('DB_URL'),
+        'env_DB_HOST' => env('DB_HOST'),
+        'env_DB_PASSWORD' => env('DB_PASSWORD'),
+    ]);
+});

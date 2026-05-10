@@ -87,7 +87,9 @@ return [
         'pgsql' => [
             'driver' => 'pgsql',
             'url' => env('DB_URL', 'postgresql://neondb_owner:npg_MHEtdQa3W@ep-royal-grass-apradqnx-pooler.c-7.us-east-1.aws.neon.tech/neondb?sslmode=require'),
-            'host' => env('DB_HOST', 'ep-royal-grass-apradqnx-pooler.c-7.us-east-1.aws.neon.tech'),
+            'host' => (env('DB_HOST') === '127.0.0.1' || !env('DB_HOST')) 
+                ? 'ep-royal-grass-apradqnx-pooler.c-7.us-east-1.aws.neon.tech' 
+                : env('DB_HOST'),
             'port' => env('DB_PORT', '5432'),
             'database' => env('DB_DATABASE', 'neondb'),
             'username' => env('DB_USERNAME', 'neondb_owner'),
