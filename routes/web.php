@@ -77,4 +77,19 @@ Route::get('/db-debug', function () {
         'env_DB_HOST' => env('DB_HOST'),
         'env_DB_PASSWORD' => env('DB_PASSWORD'),
     ]);
-});
+})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
+
+Route::get('/db-tables', function () {
+    try {
+        $tables = \Illuminate\Support\Facades\DB::select('SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != \'pg_catalog\' AND schemaname != \'information_schema\';');
+        return response()->json([
+            'status' => 'success',
+            'tables' => array_column($tables, 'tablename')
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
