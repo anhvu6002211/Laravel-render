@@ -44,9 +44,12 @@ RUN apt-get update && apt-get install -y \
                                                         # Update apache config
                                                         RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
-                                                        # Expose port
-                                                        EXPOSE 80
+                                                        # Copy entrypoint script
+COPY entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-                                                        # Start apache
-                                                        CMD ["apache2-foreground"]
-                                                        
+# Expose port
+EXPOSE 80
+
+# Start apache via entrypoint
+CMD ["/usr/local/bin/entrypoint.sh"]
