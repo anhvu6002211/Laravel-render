@@ -93,3 +93,18 @@ Route::get('/db-tables', function () {
         ]);
     }
 })->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
+
+Route::get('/run-migrations', function () {
+    try {
+        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
+        return response()->json([
+            'status' => 'success',
+            'output' => \Illuminate\Support\Facades\Artisan::output()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage()
+        ]);
+    }
+})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
