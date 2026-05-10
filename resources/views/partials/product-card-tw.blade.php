@@ -1,4 +1,4 @@
-<a href="{{ route('products.show', $product->id) }}" class="product-card group p-4 flex flex-col h-full">
+<a href="{{ route('products.show', $product->slug) }}" class="product-card group p-4 flex flex-col h-full">
     <div class="flex items-center justify-between">
         <span class="glass-chip text-[10px] font-semibold px-2 py-1 rounded-full text-slate-600">
             {{ $product->category?->name ?? 'Sản phẩm' }}
@@ -12,7 +12,7 @@
 
     <div class="relative aspect-square rounded-2xl overflow-hidden bg-white/80 mt-3 mb-4 flex items-center justify-center">
         <img alt="{{ $product->name }}" class="w-full h-full object-contain p-4 group-hover:scale-105 transition-transform duration-500" 
-             src="{{ $product->image ?? 'https://via.placeholder.com/400x400.png?text=' . urlencode($product->name) }}" />
+             src="{{ $product->getImageUrl() }}" />
         @if($product->stock <= 0)
             <div class="absolute inset-0 bg-white/75 flex items-center justify-center text-xs font-bold text-slate-500">Hết hàng</div>
         @endif

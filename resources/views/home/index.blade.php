@@ -75,7 +75,7 @@
                     @forelse($featuredProducts->take(2) as $product)
                         <a href="{{ route('products.show', $product->slug) }}" class="flex items-center gap-3 group">
                             <div class="h-16 w-16 rounded-xl bg-white/80 border border-white/60 p-2 flex items-center justify-center">
-                                <img src="{{ $product->image ?? 'https://via.placeholder.com/300' }}" alt="{{ $product->name }}" class="max-h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                                <img src="{{ $product->getImageUrl() }}" alt="{{ $product->name }}" class="max-h-full object-contain group-hover:scale-105 transition-transform duration-300">
                             </div>
                             <div class="min-w-0">
                                 <p class="text-sm font-bold text-slate-800 group-hover:text-primary transition-colors truncate">{{ $product->name }}</p>
@@ -100,7 +100,7 @@
         </div>
         <div class="mt-5 flex flex-wrap gap-3">
             @foreach($categories as $category)
-                <a href="{{ route('shop.index', ['category' => $category->id]) }}" class="glass-chip px-4 py-2 rounded-full text-sm font-semibold text-slate-700 flex items-center gap-2 hover:shadow-md transition-all">
+                <a href="{{ route('shop.index', ['category' => $category->slug]) }}" class="glass-chip px-4 py-2 rounded-full text-sm font-semibold text-slate-700 flex items-center gap-2 hover:shadow-md transition-all">
                     <span class="material-symbols-outlined text-[18px] text-primary">
                         @if(Str::contains(Str::lower($category->name), 'điện thoại')) smartphone
                         @elseif(Str::contains(Str::lower($category->name), 'laptop')) laptop_mac
@@ -133,7 +133,7 @@
                     </div>
                     
                     <a href="{{ route('products.show', $product->slug) }}" class="block my-4 h-[160px] relative">
-                        <img src="{{ $product->image ?? 'https://via.placeholder.com/300' }}" alt="{{ $product->name }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
+                        <img src="{{ $product->getImageUrl() }}" alt="{{ $product->name }}" class="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300">
                     </a>
                     
                     <div class="flex-1 flex flex-col">

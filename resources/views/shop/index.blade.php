@@ -32,7 +32,7 @@
 
                 <form method="GET" action="{{ route('shop.index') }}" class="space-y-4">
                     @if($selectedCategory)
-                        <input type="hidden" name="category" value="{{ $selectedCategory->id }}">
+                        <input type="hidden" name="category" value="{{ $selectedCategory->slug }}">
                     @endif
 
                     <div>
@@ -72,7 +72,7 @@
                         <span class="text-[10px] bg-white/70 text-slate-400 px-1.5 py-0.5 rounded-full">{{ $categories->sum('products_count') }}</span>
                     </a>
                     @foreach($categories as $cat)
-                        <a href="{{ route('shop.index', array_merge($baseFilters, ['category' => $cat->id])) }}" 
+                        <a href="{{ route('shop.index', array_merge($baseFilters, ['category' => $cat->slug])) }}" 
                            class="flex items-center justify-between px-3 py-2 rounded-xl text-xs transition-all {{ $selectedCategory?->id == $cat->id ? 'bg-white/70 text-primary font-bold' : 'text-slate-600 hover:bg-white/60' }}">
                             <span>{{ $cat->name }}</span>
                             <span class="text-[10px] bg-white/70 text-slate-400 px-1.5 py-0.5 rounded-full">{{ $cat->products_count }}</span>

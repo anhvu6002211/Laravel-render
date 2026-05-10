@@ -11,11 +11,15 @@ class ShopController extends Controller
     public function index(Request $request)
     {
         $categories = Category::withCount('products')->get();
-        $categoryId = $request->get('category');
+        $categorySlug = $request->get('category');
 
         $query = Product::with('category');
-        if ($categoryId) {
-            $query->where('category_id', $categoryId);
+        $selectedCategory = null;
+        if ($categorySlug) {
+            $selectedCategory = Category::where('slug', $categorySlug)->first();
+            if ($selectedCategory) {
+                $query->where('category_id', $selectedCategory->id);
+            }
         }
 
         $priceMin = $request->get('price_min');
@@ -40,7 +44,7 @@ class ShopController extends Controller
         };
 
         $products = $query->paginate(12)->withQueryString();
-        $selectedCategory = $categoryId ? Category::find($categoryId) : null;
+
 
         return view('shop.index', compact('categories', 'products', 'selectedCategory', 'sort'));
     }

@@ -14,6 +14,7 @@ use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Support\Str;
 
 class ProductResource extends Resource
@@ -84,10 +85,12 @@ class ProductResource extends Resource
 
                 Section::make('Hình ảnh')
                     ->schema([
-                        TextInput::make('image')
-                            ->label('URL Hình ảnh')
-                            ->url()
-                            ->maxLength(2048),
+                        SpatieMediaLibraryFileUpload::make('image')
+                            ->label('Ảnh sản phẩm')
+                            ->collection('image')
+                            ->image()
+                            ->multiple()
+                            ->reorderable(),
                     ]),
             ]);
     }
@@ -96,8 +99,9 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\ImageColumn::make('image')
+                Tables\Columns\SpatieMediaLibraryImageColumn::make('image')
                     ->label('Ảnh')
+                    ->collection('image')
                     ->circular()
                     ->size(40),
 
@@ -119,6 +123,7 @@ class ProductResource extends Resource
 
                 Tables\Columns\TextColumn::make('stock')
                     ->label('Tồn kho')
+                    ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.'))
                     ->sortable()
                     ->color(fn (int $state): string => $state > 10 ? 'success' : ($state > 0 ? 'warning' : 'danger')),
 
@@ -128,7 +133,7 @@ class ProductResource extends Resource
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
-                    ->dateTime('d/m/Y')
+                    ->formatStateUsing(fn ($state) => $state?->format('d/m/Y'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

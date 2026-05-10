@@ -252,8 +252,9 @@
                     </div>
                     
                     <!-- Mega Menu Dropdown -->
-                    <div class="absolute top-full left-0 w-[820px] mt-3 hidden group-hover:grid grid-cols-4 gap-4 p-6 rounded-2xl glass-panel text-slate-700 border border-white/60 z-[1000]">
-                        <div class="space-y-4">
+                    <div class="absolute top-full left-0 pt-3 hidden group-hover:block z-[1000]">
+                        <div class="w-[820px] grid grid-cols-4 gap-4 p-6 rounded-2xl glass-panel text-slate-700 border border-white/60">
+                            <div class="space-y-4">
                             <h4 class="font-bold text-sm border-b pb-2 flex items-center gap-2 text-primary border-white/60">
                                 <span class="material-symbols-outlined text-sm">smartphone</span> Điện thoại
                             </h4>
@@ -297,6 +298,7 @@
                                 <li><a href="#" class="hover:text-primary transition-colors">Đồng hồ trẻ em</a></li>
                             </ul>
                         </div>
+                    </div>
                     </div>
                 </div>
 

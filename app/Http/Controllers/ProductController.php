@@ -7,9 +7,9 @@ use App\Models\Category;
 
 class ProductController extends Controller
 {
-    public function show($id)
+    public function show($slug)
     {
-        $product = Product::with('category')->findOrFail($id);
+        $product = Product::with('category')->where('slug', $slug)->firstOrFail();
         $product->incrementView();
 
         $related = Product::with('category')

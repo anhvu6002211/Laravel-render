@@ -4,9 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Product extends Model
+class Product extends Model implements HasMedia
 {
+    use InteractsWithMedia;
     protected $fillable = [
         'name',
         'slug',
@@ -18,6 +21,28 @@ class Product extends Model
         'is_active',
         'category_id',
     ];
+
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    /**
+     * Lấy URL ảnh sản phẩm (Media Library hoặc field image cũ).
+     */
+    public function getImageUrl(): string
+    {
+        $media = $this->getFirstMediaUrl('image');
+        if ($media) {
+            return $media;
+        }
+
+        if ($this->image && filter_var($this->image, FILTER_VALIDATE_URL)) {
+            return $this->image;
+        }
+
+        return $this->image ? asset('storage/' . $this->image) : 'https://via.placeholder.com/400x400.png?text=' . urlencode($this->name);
+    }
 
     protected $casts = [
         'price'     => 'decimal:0',

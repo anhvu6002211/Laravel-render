@@ -11,6 +11,7 @@ use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Tables;
 use Filament\Tables\Table;
+use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Illuminate\Support\Str;
 
 class CategoryResource extends Resource
@@ -44,10 +45,10 @@ class CategoryResource extends Resource
                     ->maxLength(256)
                     ->unique(ignoreRecord: true),
 
-                TextInput::make('image')
-                    ->label('URL Hình ảnh')
-                    ->url()
-                    ->maxLength(2048),
+                SpatieMediaLibraryFileUpload::make('image')
+                    ->label('Ảnh danh mục')
+                    ->collection('image')
+                    ->image(),
 
                 Toggle::make('is_active')
                     ->label('Hiển thị')
@@ -59,9 +60,11 @@ class CategoryResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('id')
-                    ->label('ID')
-                    ->sortable(),
+                Tables\Columns\SpatieMediaLibraryImageColumn::make('image')
+                    ->label('Ảnh')
+                    ->collection('image')
+                    ->circular()
+                    ->size(40),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên danh mục')
@@ -75,6 +78,7 @@ class CategoryResource extends Resource
                 Tables\Columns\TextColumn::make('products_count')
                     ->label('Số sản phẩm')
                     ->counts('products')
+                    ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.'))
                     ->sortable(),
 
                 Tables\Columns\IconColumn::make('is_active')
@@ -83,7 +87,7 @@ class CategoryResource extends Resource
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày tạo')
-                    ->dateTime('d/m/Y')
+                    ->formatStateUsing(fn ($state) => $state?->format('d/m/Y'))
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

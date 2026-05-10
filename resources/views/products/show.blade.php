@@ -2,14 +2,17 @@
 
 @section('title', $product->name . ' — Vuxshop')
 @section('description', $product->description ?: 'San pham cong nghe chinh hang tai Vuxshop.')
-@section('og_image', $product->image)
-@section('canonical', route('products.show', $product->id))
+@section('og_image', $product->getImageUrl())
+@section('canonical', route('products.show', $product->slug))
 @section('og_type', 'product')
 
 @section('content')
 @php
-    $mainImage = $product->image ?: 'https://via.placeholder.com/800x800/ffffff/0b1220?text=' . urlencode($product->name);
-    $gallery = [$mainImage, $mainImage, $mainImage, $mainImage];
+    $mainImage = $product->getImageUrl();
+    $mediaGallery = $product->getMedia('image');
+    $gallery = $mediaGallery->count() > 0 
+        ? $mediaGallery->map(fn($m) => $m->getUrl())->toArray() 
+        : [$mainImage];
 @endphp
 <div class="max-w-[1240px] mx-auto px-4">
     <div class="glass-panel rounded-2xl px-4 py-3 mb-6 flex flex-wrap items-center gap-2 text-[11px] text-slate-500">

@@ -15,18 +15,20 @@ GIAI ĐOẠN 2: ADMIN PANEL - FILAMENT V5 (HOÀN THÀNH ✅)
 - [x] ProductResource: Quản lý sản phẩm (Rich Editor, Stock management).
 - [x] OrderResource: Quản lý đơn hàng (Badge status, Customer info).
 - [x] Fix lỗi tương thích API v5 & định dạng tiền tệ VND thủ công.
+- [x] Tích hợp Spatie Media Library cho Product & Category.
+- [x] Cài đặt Filament Shield: Quản lý quyền hạn Admin qua giao diện UI.
 
-GIAI ĐOẠN 3: FRONTEND & GIỎ HÀNG (SẮP TỚI 🚀)
+GIAI ĐOẠN 3: FRONTEND & GIỎ HÀNG (HOÀN THÀNH ✅)
 -------------------------------------------
 - [x] Xây dựng layout chung: header, footer, nav, breadcrumbs.
 - [x] Thiết kế Trang chủ (Blade + CSS Glassmorphism): hero, danh mục nổi bật, sản phẩm mới/bán chạy.
 - [x] Trang danh sách sản phẩm: filter/sort, pagination, grid rõ ràng.
-- [x] Component card sản phẩm: ảnh, giá, badge khuyến mãi, trạng thái còn hàng.
-- [x] Trang chi tiết sản phẩm: gallery, mô tả, thông tin kỹ thuật, CTA add-to-cart.
+- [x] Component card sản phẩm: ảnh (Media Library), giá, badge khuyến mãi, trạng thái còn hàng.
+- [x] Trang chi tiết sản phẩm: gallery (Media Library), mô tả, thông tin kỹ thuật, CTA add-to-cart.
 - [x] Tìm kiếm sản phẩm: ô search, trang kết quả, xử lý không có kết quả.
 - [x] Livewire v3 Giỏ hàng: thêm/sửa/xóa số lượng không reload, lưu session.
 - [x] Trang giỏ hàng: tổng tiền, ghi chú, nút checkout.
-- [x] Tối ưu SEO cơ bản: meta tags, Open Graph, sitemap.
+- [x] Tối ưu SEO & URL: Sử dụng SLUG thay cho ID sản phẩm, meta tags, Open Graph.
 
 GIAI ĐOẠN 4: THANH TOÁN & ĐƠN HÀNG (HOÀN THÀNH ✅)
 ---------------------------------
@@ -41,11 +43,13 @@ GIAI ĐOẠN 4: THANH TOÁN & ĐƠN HÀNG (HOÀN THÀNH ✅)
 GIAI ĐOẠN 5: POLISH & DEPLOY
 ---------------------------
 - [x] Viết Feature test cơ bản: cart, checkout, tạo đơn hàng.
+- [x] Di chuyển toàn bộ ảnh cũ từ URL/Public sang Spatie Media Library.
 - [ ] Tối ưu hiệu năng: eager load, cache danh sách sản phẩm, pagination.
-- [ ] Tối ưu asset: hình ảnh, lazyload, Vite build production.
+- [ ] Tối ưu asset: hình ảnh (WebP), lazyload, Vite build production.
 - [ ] Bổ sung trang lỗi (404/500) + thông báo thân thiện.
 - [ ] Hướng dẫn Deploy lên Host/VPS + checklist ENV.
 
 THÔNG TIN ĐĂNG NHẬP ADMIN:
 URL: http://localhost:8001/admin
-Email: admin@eshop.vn / Pass: password
+Email: admin@gmail.com / Pass: password
+(Đã gán vai trò: super_admin)

@@ -137,11 +137,12 @@ class OrderResource extends Resource
                 Tables\Columns\TextColumn::make('orderItems_count')
                     ->label('Số SP')
                     ->counts('orderItems')
+                    ->formatStateUsing(fn ($state) => number_format($state, 0, ',', '.'))
                     ->sortable(),
 
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Ngày đặt')
-                    ->dateTime('d/m/Y H:i')
+                    ->formatStateUsing(fn ($state) => $state?->format('d/m/Y H:i'))
                     ->sortable(),
             ])
             ->defaultSort('created_at', 'desc')
