@@ -18,7 +18,10 @@ class CartPanel extends Component
 
     public function render()
     {
-        return view('livewire.cart-panel');
+        return view('livewire.cart-panel', [
+            'total'     => $this->total,
+            'itemCount' => $this->itemCount,
+        ]);
     }
 
     public function getTotalProperty(): int
