@@ -36,7 +36,7 @@ php artisan config:cache
 # Run database migrations
 php artisan migrate --force
 
-echo "=== Entrypoint complete. DB driver: $(php artisan tinker --execute=\"echo config('database.default');\" 2>/dev/null || echo 'unknown') ==="
+echo "=== Entrypoint complete ==="
 
 # Start Apache in the foreground
 exec apache2-foreground
