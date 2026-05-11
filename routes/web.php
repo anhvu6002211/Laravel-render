@@ -94,13 +94,10 @@ Route::get('/db-tables', function () {
     }
 })->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
 
-Route::get('/run-migrations', function () {
+Route::get('/run-migrate', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return response()->json([
-            'status' => 'success',
-            'output' => \Illuminate\Support\Facades\Artisan::output()
-        ]);
+        return "Database đã được cập nhật bảng thành công!<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
     } catch (\Exception $e) {
         return response()->json([
             'status' => 'error',
