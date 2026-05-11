@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -e
 
+# TẠM THỜI: bật debug để thấy lỗi thật trên Render
+export APP_DEBUG=true
+
 # Configure Apache to listen on $PORT instead of 80 (Render provides $PORT)
 if [ -n "$PORT" ]; then
     sed -i "s/80/$PORT/g" /etc/apache2/sites-available/000-default.conf /etc/apache2/ports.conf

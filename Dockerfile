@@ -16,7 +16,8 @@ RUN apt-get update && apt-get install -y \
     libicu-dev \
     libsqlite3-dev \
     nodejs \
-    npm
+    npm \
+    python3
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
