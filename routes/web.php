@@ -64,44 +64,18 @@ Route::middleware('auth')->group(function () {
 Route::get('/db-test', function () {
     try {
         \DB::connection()->getPdo();
-        return "Kết nối Database thành công! Đang sử dụng: " . \DB::connection()->getDatabaseName();
+        $tables = \DB::select("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+        return response()->json([
+            'status' => 'success',
+            'database' => \DB::connection()->getDatabaseName(),
+            'driver' => config('database.default'),
+            'tables' => array_column($tables, 'name'),
+        ]);
     } catch (\Exception $e) {
-        return "Lỗi kết nối Database: " . $e->getMessage();
+        return response()->json([
+            'status' => 'error',
+            'message' => $e->getMessage(),
+        ]);
     }
 });
 
-Route::get('/db-debug', function () {
-    return response()->json([
-        'config' => config('database.connections.pgsql'),
-        'env_DB_URL' => env('DB_URL'),
-        'env_DB_HOST' => env('DB_HOST'),
-        'env_DB_PASSWORD' => env('DB_PASSWORD'),
-    ]);
-})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
-
-Route::get('/db-tables', function () {
-    try {
-        $tables = \Illuminate\Support\Facades\DB::select('SELECT tablename FROM pg_catalog.pg_tables WHERE schemaname != \'pg_catalog\' AND schemaname != \'information_schema\';');
-        return response()->json([
-            'status' => 'success',
-            'tables' => array_column($tables, 'tablename')
-        ]);
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ]);
-    }
-})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
-
-Route::get('/run-migrate', function () {
-    try {
-        \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
-        return "Database đã được cập nhật bảng thành công!<br><pre>" . \Illuminate\Support\Facades\Artisan::output() . "</pre>";
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => 'error',
-            'message' => $e->getMessage()
-        ]);
-    }
-})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
