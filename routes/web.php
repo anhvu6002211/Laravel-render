@@ -64,12 +64,18 @@ Route::middleware('auth')->group(function () {
 Route::get('/db-test', function () {
     try {
         \DB::connection()->getPdo();
-        $tables = \DB::select("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+        $driver = config('database.default');
+        if ($driver === 'sqlite') {
+            $tables = \DB::select("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
+            $tableNames = array_column($tables, 'name');
+        } else {
+            $tableNames = ['non-sqlite driver: ' . $driver];
+        }
         return response()->json([
             'status' => 'success',
             'database' => \DB::connection()->getDatabaseName(),
-            'driver' => config('database.default'),
-            'tables' => array_column($tables, 'name'),
+            'driver' => $driver,
+            'tables' => $tableNames,
         ]);
     } catch (\Exception $e) {
         return response()->json([
@@ -77,5 +83,44 @@ Route::get('/db-test', function () {
             'message' => $e->getMessage(),
         ]);
     }
-});
+})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
 
+// Debug route - TẠM THỜI - xóa sau khi fix xong
+Route::get('/debug-env', function () {
+    try {
+        $info = [
+            'app_env'       => config('app.env'),
+            'app_debug'     => config('app.debug'),
+            'db_connection' => config('database.default'),
+            'db_database'   => config('database.connections.' . config('database.default') . '.database'),
+            'session_driver'=> config('session.driver'),
+            'cache_store'   => config('cache.default'),
+            'php_version'   => PHP_VERSION,
+            'extensions'    => [
+                'pdo_sqlite' => extension_loaded('pdo_sqlite'),
+                'sqlite3'    => extension_loaded('sqlite3'),
+            ],
+        ];
+
+        // Test DB connection
+        try {
+            \DB::connection()->getPdo();
+            $info['db_status'] = 'connected';
+        } catch (\Exception $e) {
+            $info['db_status'] = 'error: ' . $e->getMessage();
+        }
+
+        // Test homepage render
+        try {
+            $response = app()->handle(\Illuminate\Http\Request::create('/', 'GET'));
+            $info['homepage_status'] = $response->getStatusCode();
+        } catch (\Throwable $e) {
+            $info['homepage_error'] = $e->getMessage();
+            $info['homepage_file']  = $e->getFile() . ':' . $e->getLine();
+        }
+
+        return response()->json($info, 200, [], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+    } catch (\Throwable $e) {
+        return response()->json(['fatal' => $e->getMessage(), 'at' => $e->getFile() . ':' . $e->getLine()]);
+    }
+})->withoutMiddleware([\Illuminate\Session\Middleware\StartSession::class]);
