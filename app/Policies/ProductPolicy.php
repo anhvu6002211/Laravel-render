@@ -11,6 +11,19 @@ use Illuminate\Auth\Access\HandlesAuthorization;
 class ProductPolicy
 {
     use HandlesAuthorization;
+
+    public function before(AuthUser $authUser, string $ability): ?bool
+    {
+        if (method_exists($authUser, 'isAdmin') && $authUser->isAdmin()) {
+            return true;
+        }
+
+        if (method_exists($authUser, 'hasRole') && $authUser->hasRole('super_admin')) {
+            return true;
+        }
+
+        return null;
+    }
     
     public function viewAny(AuthUser $authUser): bool
     {

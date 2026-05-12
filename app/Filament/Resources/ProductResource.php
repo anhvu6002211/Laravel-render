@@ -99,11 +99,11 @@ class ProductResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\SpatieMediaLibraryImageColumn::make('image')
+                Tables\Columns\ImageColumn::make('image')
                     ->label('Ảnh')
-                    ->collection('image')
                     ->circular()
-                    ->size(40),
+                    ->size(40)
+                    ->getStateUsing(fn (Product $record) => $record->getImageUrl()),
 
                 Tables\Columns\TextColumn::make('name')
                     ->label('Tên sản phẩm')

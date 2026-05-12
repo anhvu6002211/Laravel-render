@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class RunAnalytics extends Command
 {
@@ -12,46 +14,159 @@ class RunAnalytics extends Command
 
     public function handle(): int
     {
-        $dbPath     = database_path('database.sqlite');
-        $scriptPath = base_path('scripts/analytics.py');
-        $python     = config('analytics.python_bin', 'python3');
-
-        if (! file_exists($dbPath)) {
-            $this->error("SQLite file không tồn tại: {$dbPath}");
-            return self::FAILURE;
-        }
-
-        if (! file_exists($scriptPath)) {
-            $this->error("Analytics script không tồn tại: {$scriptPath}");
-            return self::FAILURE;
-        }
-
         if ($this->option('force')) {
             Cache::forget('analytics_data');
         }
 
-        $this->info('Đang chạy Python analytics...');
+        $this->info('Đang chạy analytics (MySQL/DB)...');
 
-        $escaped = escapeshellarg($dbPath);
-        $output  = shell_exec("{$python} {$scriptPath} {$escaped} 2>&1");
+        $totalOrders = (int) DB::table('orders')->count();
+        $totalRevenue = (float) DB::table('orders')
+            ->where('status', '!=', 'cancelled')
+            ->sum('total_price');
+        $pendingOrders = (int) DB::table('orders')->where('status', 'pending')->count();
+        $activeProducts = (int) DB::table('products')->where('is_active', 1)->count();
+        $totalUsers = (int) DB::table('users')->count();
 
-        if (! $output) {
-            $this->error('Python script không trả về kết quả.');
-            return self::FAILURE;
+        $overview = [
+            'total_orders' => $totalOrders,
+            'total_revenue' => $totalRevenue,
+            'pending_orders' => $pendingOrders,
+            'active_products' => $activeProducts,
+            'total_users' => $totalUsers,
+            'avg_order_value' => $totalOrders > 0 ? round($totalRevenue / $totalOrders, 0) : 0,
+        ];
+
+        $startDate = now()->subDays(29)->startOfDay();
+        $rows = DB::table('orders')
+            ->selectRaw('DATE(created_at) as day, SUM(total_price) as revenue, COUNT(*) as orders')
+            ->where('status', '!=', 'cancelled')
+            ->where('created_at', '>=', $startDate)
+            ->groupBy('day')
+            ->orderBy('day')
+            ->get();
+
+        $revenueByDay = [];
+        foreach ($rows as $row) {
+            $revenueByDay[$row->day] = [
+                'revenue' => (float) ($row->revenue ?? 0),
+                'orders' => (int) ($row->orders ?? 0),
+            ];
         }
 
-        $data = json_decode($output, true);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->error('Kết quả Python không phải JSON hợp lệ:');
-            $this->line($output);
-            return self::FAILURE;
+        $dailyRevenue = [];
+        for ($i = 0; $i < 30; $i++) {
+            $day = now()->subDays(29 - $i)->format('Y-m-d');
+            $dailyRevenue[] = [
+                'date' => $day,
+                'revenue' => $revenueByDay[$day]['revenue'] ?? 0,
+                'orders' => $revenueByDay[$day]['orders'] ?? 0,
+            ];
         }
 
-        if (isset($data['error'])) {
-            $this->error('Analytics error: ' . $data['error']);
-            return self::FAILURE;
-        }
+        $topProducts = DB::table('order_items as oi')
+            ->join('products as p', 'p.id', '=', 'oi.product_id')
+            ->join('orders as o', 'o.id', '=', 'oi.order_id')
+            ->where('o.status', '!=', 'cancelled')
+            ->selectRaw('p.name, p.price, SUM(oi.quantity) as total_sold, SUM(oi.quantity * oi.price) as revenue')
+            ->groupBy('oi.product_id', 'p.name', 'p.price')
+            ->orderByDesc('total_sold')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => $row->name,
+                'price' => (float) $row->price,
+                'total_sold' => (int) $row->total_sold,
+                'revenue' => (float) $row->revenue,
+            ])
+            ->values()
+            ->all();
+
+        $orderStatus = DB::table('orders')
+            ->select('status', DB::raw('COUNT(*) as cnt'))
+            ->groupBy('status')
+            ->orderByDesc('cnt')
+            ->get()
+            ->map(fn ($row) => ['status' => $row->status, 'count' => (int) $row->cnt])
+            ->values()
+            ->all();
+
+        $revenueByCategory = DB::table('order_items as oi')
+            ->join('products as p', 'p.id', '=', 'oi.product_id')
+            ->join('categories as c', 'c.id', '=', 'p.category_id')
+            ->join('orders as o', 'o.id', '=', 'oi.order_id')
+            ->where('o.status', '!=', 'cancelled')
+            ->selectRaw('c.name as category, SUM(oi.quantity * oi.price) as revenue, SUM(oi.quantity) as units')
+            ->groupBy('c.id', 'c.name')
+            ->orderByDesc('revenue')
+            ->get()
+            ->map(fn ($row) => [
+                'category' => $row->category,
+                'revenue' => (float) $row->revenue,
+                'units' => (int) $row->units,
+            ])
+            ->values()
+            ->all();
+
+        $lowStock = DB::table('products')
+            ->select('name', 'stock', 'price')
+            ->where('is_active', 1)
+            ->where('stock', '<', 10)
+            ->orderBy('stock')
+            ->limit(10)
+            ->get()
+            ->map(fn ($row) => [
+                'name' => $row->name,
+                'stock' => (int) $row->stock,
+                'price' => (float) $row->price,
+            ])
+            ->values()
+            ->all();
+
+        $startThisMonth = now()->startOfMonth();
+        $startLastMonth = now()->subMonthNoOverflow()->startOfMonth();
+        $endLastMonth = $startThisMonth->copy()->subSecond();
+
+        $thisMonthRevenue = (float) DB::table('orders')
+            ->where('status', '!=', 'cancelled')
+            ->whereBetween('created_at', [$startThisMonth, now()])
+            ->sum('total_price');
+        $lastMonthRevenue = (float) DB::table('orders')
+            ->where('status', '!=', 'cancelled')
+            ->whereBetween('created_at', [$startLastMonth, $endLastMonth])
+            ->sum('total_price');
+
+        $ordersThisMonth = (int) DB::table('orders')
+            ->where('status', '!=', 'cancelled')
+            ->whereBetween('created_at', [$startThisMonth, now()])
+            ->count();
+        $ordersLastMonth = (int) DB::table('orders')
+            ->where('status', '!=', 'cancelled')
+            ->whereBetween('created_at', [$startLastMonth, $endLastMonth])
+            ->count();
+
+        $growthPct = $lastMonthRevenue > 0
+            ? round((($thisMonthRevenue - $lastMonthRevenue) / $lastMonthRevenue) * 100, 1)
+            : 0;
+
+        $growth = [
+            'this_month_revenue' => $thisMonthRevenue,
+            'last_month_revenue' => $lastMonthRevenue,
+            'revenue_growth_pct' => $growthPct,
+            'orders_this_month' => $ordersThisMonth,
+            'orders_last_month' => $ordersLastMonth,
+        ];
+
+        $data = [
+            'overview' => $overview,
+            'daily_revenue' => $dailyRevenue,
+            'top_products' => $topProducts,
+            'order_status' => $orderStatus,
+            'revenue_by_category' => $revenueByCategory,
+            'low_stock' => $lowStock,
+            'growth' => $growth,
+            'generated_at' => now()->toIso8601String(),
+        ];
 
         // Cache 10 phút
         Cache::put('analytics_data', $data, now()->addMinutes(10));
