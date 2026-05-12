@@ -13,20 +13,24 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Admin user
-        User::create([
-            'name'     => 'Admin',
-            'email'    => 'admin@eshop.vn',
-            'password' => Hash::make('password'),
-            'role'     => 'admin',
-        ]);
+        User::firstOrCreate(
+            ['email'    => 'admin@eshop.vn'],
+            [
+                'name'     => 'Admin',
+                'password' => Hash::make('password'),
+                'role'     => 'admin',
+            ]
+        );
 
         // Demo customer
-        User::create([
-            'name'     => 'Khách hàng',
-            'email'    => 'khach@eshop.vn',
-            'password' => Hash::make('password'),
-            'role'     => 'customer',
-        ]);
+        User::firstOrCreate(
+            ['email'    => 'khach@eshop.vn'],
+            [
+                'name'     => 'Khách hàng',
+                'password' => Hash::make('password'),
+                'role'     => 'customer',
+            ]
+        );
 
         // Categories (slug tự động tạo từ Model)
         $categories = [
@@ -40,7 +44,7 @@ class DatabaseSeeder extends Seeder
 
         $catIds = [];
         foreach ($categories as $cat) {
-            $created = Category::create($cat);
+            $created = Category::firstOrCreate(['name' => $cat['name']], $cat);
             $catIds[$cat['name']] = $created->id;
         }
 
@@ -74,15 +78,23 @@ class DatabaseSeeder extends Seeder
         ];
 
         foreach ($products as $p) {
-            Product::create([
-                'name'        => $p['name'],
-                'description' => $p['description'],
-                'image'       => $p['image'],
-                'price'       => $p['price'],
-                'stock'       => $p['stock'],
-                'view'        => $p['view'],
-                'category_id' => $catIds[$p['category']],
-            ]);
+            Product::firstOrCreate(
+                ['name' => $p['name']],
+                [
+                    'description' => $p['description'],
+                    'image'       => $p['image'],
+                    'price'       => $p['price'],
+                    'stock'       => $p['stock'],
+                    'view'        => $p['view'],
+                    'category_id' => $catIds[$p['category']],
+                ]
+            );
         }
+
+        // Gọi các seeder bổ sung
+        $this->call([
+            ExtraProductsSeeder::class,
+            SampleOrdersSeeder::class,
+        ]);
     }
 }

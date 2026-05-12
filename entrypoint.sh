@@ -33,8 +33,8 @@ php artisan cache:clear 2>/dev/null || true
 # Only cache config (NOT routes - closure routes can't be cached)
 php artisan config:cache
 
-# Run database migrations
-php artisan migrate --force
+# Run database migrations and seeders
+php artisan migrate --seed --force
 
 echo "=== Entrypoint complete ==="
 
