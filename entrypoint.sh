@@ -36,6 +36,9 @@ php artisan config:cache
 # Run database migrations and seeders
 php artisan migrate --seed --force
 
+# Initial analytics run to populate charts
+php artisan analytics:run --force
+
 echo "=== Entrypoint complete ==="
 
 # Start Apache in the foreground
